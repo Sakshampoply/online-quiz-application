@@ -6,7 +6,6 @@ Provides convenient commands for running different types of tests.
 
 import subprocess
 import sys
-import os
 from pathlib import Path
 
 # Get the backend directory
@@ -46,7 +45,7 @@ Usage: python run_tests.py [command]
 Commands:
   all         - Run all tests
   unit        - Run unit tests (test_backend.py)
-  edge        - Run edge case tests (test_edge_cases.py) 
+  edge        - Run edge case tests (test_edge_cases.py)
   api         - Run API integration tests (test_api.py)
   fast        - Run tests without verbose output
   help        - Show this help message

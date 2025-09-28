@@ -1,6 +1,7 @@
-import pytest
-import sys
 import os
+import sys
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,7 +12,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import backend.main as main
 import backend.models as models
-import backend.schemas as schemas
 import backend.seed as seed
 from backend.database import get_db
 
@@ -225,7 +225,7 @@ class TestCORSHeaders:
         """Test OPTIONS request for CORS preflight."""
         # TestClient handles OPTIONS requests automatically
         # This test ensures the endpoint is accessible
-        response = client.options("/questions/")
+        client.options("/questions/")
         # Options requests should be handled by CORS middleware
 
 

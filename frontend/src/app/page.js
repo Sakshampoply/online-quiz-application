@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import QuizStart from '../components/QuizStart';
 import QuizView from '../components/QuizView';
 import QuizResults from '../components/QuizResults';
@@ -51,45 +51,8 @@ export default function Home() {
     fetchQuestions();
   }, [fetchTrigger]); // Re-runs whenever fetchTrigger changes
 
-  // Global Timer Logic
-  useEffect(() => {
-    if (quizState !== 'in_progress' || timeLeft === 0) return;
-
-    const timerId = setInterval(() => {
-      setTimeLeft((prevTime) => prevTime - 1);
-    }, 1000);
-    
-    // Auto-submit when timer reaches zero
-    if (timeLeft === 1) { // Check for 1 to trigger on the next render cycle at 0
-        setTimeout(() => handleSubmitQuiz(), 1000);
-    }
-
-    return () => clearInterval(timerId);
-  }, [quizState, timeLeft]);
-
-  const handleStartQuiz = () => {
-    setTimeLeft(initialState.timeLeft);
-    setQuizState('in_progress');
-  };
-
-  const handleAnswerSelect = (choiceId) => {
-    const questionId = questions[currentQuestionIndex].id;
-    setUserAnswers({ ...userAnswers, [questionId]: choiceId });
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
-
-  const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
-  };
-
-  const handleSubmitQuiz = async () => {
+  // Define handleSubmitQuiz first before using it in useEffect
+  const handleSubmitQuiz = useCallback(async () => {
     if (quizState === 'calculating' || quizState === 'completed') return; // Prevent double submission
     setQuizState('calculating');
     const answersPayload = {
@@ -111,6 +74,44 @@ export default function Home() {
       setQuizState('completed');
     } catch (err) {
       setError(err.message);
+    }
+  }, [quizState, userAnswers]);
+
+  // Global Timer Logic
+  useEffect(() => {
+    if (quizState !== 'in_progress' || timeLeft === 0) return;
+
+    const timerId = setInterval(() => {
+      setTimeLeft((prevTime) => prevTime - 1);
+    }, 1000);
+    
+    // Auto-submit when timer reaches zero
+    if (timeLeft === 1) { // Check for 1 to trigger on the next render cycle at 0
+        setTimeout(() => handleSubmitQuiz(), 1000);
+    }
+
+    return () => clearInterval(timerId);
+  }, [quizState, timeLeft, handleSubmitQuiz]);
+
+  const handleStartQuiz = () => {
+    setTimeLeft(initialState.timeLeft);
+    setQuizState('in_progress');
+  };
+
+  const handleAnswerSelect = (choiceId) => {
+    const questionId = questions[currentQuestionIndex].id;
+    setUserAnswers({ ...userAnswers, [questionId]: choiceId });
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
   

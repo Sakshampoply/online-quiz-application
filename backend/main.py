@@ -1,12 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
 from typing import List
+
+from fastapi import Depends, FastAPI, HTTPException
 
 # Add CORS middleware to allow frontend to call backend
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 from . import crud, models, schemas
-from .database import SessionLocal, engine, get_db
+from .database import engine, get_db
 
 # Create all database tables on startup
 models.Base.metadata.create_all(bind=engine)

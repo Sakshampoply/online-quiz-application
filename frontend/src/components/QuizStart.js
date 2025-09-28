@@ -11,7 +11,7 @@ export default function QuizStart({ onStartQuiz }) {
         Welcome to the Quiz!
       </h1>
       <p className="text-lg text-gray-600 mb-8">
-        Test your knowledge with our fun and challenging questions. Click the button below when you're ready to start.
+        Test your knowledge with our fun and challenging questions. Click the button below when you&apos;re ready to start.
       </p>
       <button
         onClick={onStartQuiz}
