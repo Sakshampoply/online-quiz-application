@@ -79,4 +79,4 @@ jobs:
 
       - name: Run Tests
         run: |
-          python -m pytest tests/ -v
+          python -m pytest backend/tests/ -v
