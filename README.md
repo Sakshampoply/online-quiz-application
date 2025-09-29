@@ -52,7 +52,164 @@ A modern, full-stack quiz application built with **Next.js** frontend and **Fast
 - **Code Quality**: ESLint (frontend) + Flake8 (backend)
 - **Environment**: Virtual environments (venv)
 
-## 🚀 Quick Start
+## � Data Flow Architecture
+
+### System Overview
+
+```
+┌─────────────┐    HTTP/REST API    ┌─────────────┐    SQLAlchemy ORM    ┌─────────────┐
+│             │ ────────────────▶   │             │ ──────────────────▶  │             │
+│   Frontend  │                     │   Backend   │                      │  Database   │
+│  (Next.js)  │ ◀──────────────────  │  (FastAPI)  │ ◀────────────────────  │  (SQLite)   │
+│             │    JSON Response    │             │     Query Results    │             │
+└─────────────┘                     └─────────────┘                      └─────────────┘
+```
+
+### Detailed Data Flow
+
+#### 1. 🎯 **Quiz Loading Flow**
+
+```
+User Action: "Start Quiz"
+│
+├─▶ Frontend (React State)
+│   ├─ useState/useEffect hooks
+│   ├─ Component state management
+│   └─ Timer initialization
+│
+├─▶ HTTP GET /questions/
+│   ├─ Fetch API call to backend
+│   ├─ Request headers (CORS)
+│   └─ Awaits response
+│
+├─▶ Backend (FastAPI)
+│   ├─ Route: @app.get("/questions/")
+│   ├─ Dependency injection: get_db()
+│   ├─ CRUD operation: crud.get_questions(db)
+│   └─ Pydantic serialization
+│
+├─▶ Database (SQLite)
+│   ├─ SQLAlchemy ORM query
+│   ├─ JOIN questions and choices tables
+│   ├─ Filter: exclude is_correct field
+│   └─ Return question + choices data
+│
+└─▶ Response Flow
+    ├─ Database → SQLAlchemy models
+    ├─ Models → Pydantic schemas
+    ├─ Schemas → JSON response
+    ├─ JSON → Frontend state
+    └─ State → UI rendering
+```
+
+#### 2. ✅ **Quiz Submission Flow**
+
+```
+User Action: "Submit Quiz" / Timer expires
+│
+├─▶ Frontend (React)
+│   ├─ Collect user answers from state
+│   ├─ Format: {question_id: choice_id}
+│   ├─ Create AnswerPayload object
+│   └─ Set loading state
+│
+├─▶ HTTP POST /submit/
+│   ├─ Request body: JSON answers
+│   ├─ Content-Type: application/json
+│   ├─ CORS headers
+│   └─ Error handling
+│
+├─▶ Backend (FastAPI)
+│   ├─ Route: @app.post("/submit/")
+│   ├─ Pydantic validation: AnswerPayload
+│   ├─ Business logic: crud.calculate_score()
+│   └─ Response formatting
+│
+├─▶ Database Operations
+│   ├─ Query all questions + choices
+│   ├─ Build answer key (correct answers)
+│   ├─ Compare user answers vs correct
+│   ├─ Calculate score and details
+│   └─ Generate result statistics
+│
+└─▶ Response Flow
+    ├─ QuizResult object creation
+    ├─ Detailed question results
+    ├─ Score calculation (X/Y correct)
+    ├─ JSON serialization
+    ├─ HTTP 200 response
+    └─ Frontend result display
+```
+
+#### 3. 🔧 **Real-time Features**
+
+```
+Timer Management (Frontend Only)
+├─ useEffect with setInterval
+├─ State updates every second
+├─ Auto-submit at timeLeft === 0
+└─ Progress tracking
+
+Navigation Flow
+├─ Previous/Next button clicks
+├─ Local state updates (no API)
+├─ Answer preservation
+└─ Progress indicator updates
+
+Error Handling
+├─ Network failures → User notification
+├─ Validation errors → Form feedback
+├─ Server errors → Graceful degradation
+└─ Timeout handling → Auto-retry
+```
+
+### 🏗️ **Component Architecture**
+
+```
+Frontend Components:
+┌─ page.js (Main App)
+│  ├─ QuizStart.js ────▶ Start quiz flow
+│  ├─ QuizView.js ─────▶ Question display + navigation
+│  └─ QuizResults.js ──▶ Score display + restart
+
+Backend Modules:
+┌─ main.py ────────────▶ FastAPI app + routes
+├─ models.py ─────────▶ SQLAlchemy database models
+├─ schemas.py ────────▶ Pydantic validation schemas
+├─ crud.py ───────────▶ Database operations
+├─ database.py ───────▶ DB connection + session
+└─ seed.py ───────────▶ Initial data population
+```
+
+### 🔐 **Data Validation Layers**
+
+```
+Input Validation:
+Frontend ────▶ TypeScript/PropTypes (optional)
+    │
+    ▼
+Backend ─────▶ Pydantic schemas (runtime validation)
+    │
+    ▼
+Database ────▶ SQLAlchemy constraints (data integrity)
+```
+
+### 📊 **Database Schema**
+
+```sql
+Questions Table:
+├─ id (Primary Key)
+├─ text (Question content)
+└─ choices (Relationship)
+
+Choices Table:
+├─ id (Primary Key)
+├─ text (Choice content)
+├─ is_correct (Boolean)
+└─ question_id (Foreign Key)
+```
+
+## �🚀 Quick Start
 
 ### Prerequisites
 
